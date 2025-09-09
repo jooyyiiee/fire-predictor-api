@@ -1,0 +1,10 @@
+flask
+tensorflow-cpu==2.19.0
+pillow
+numpy
+gunicorn
+firebase-admin
+cloudinary
+python-dotenv
+flask-cors
+supabase
