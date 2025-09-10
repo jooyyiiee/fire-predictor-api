@@ -78,18 +78,16 @@ def determine_alarm_level(houses):
         return "Task Force Bravo - ~28 fire trucks"
     elif houses >= 144:
         return "Task Force Alpha - ~24 fire trucks"
-    elif houses >= 11:
+    elif houses >= 10:
         return "Fifth Alarm - 20 fire trucks"
-    elif houses >= 9:
+    elif houses >= 8:
         return "Fourth Alarm - 16 fire trucks"
-    elif houses >= 7:
+    elif houses >= 6:
         return "Third Alarm - 12 fire trucks"
-    elif houses >= 5:
+    elif houses >= 4:
         return "Second Alarm - 8 fire trucks"
-    elif houses >= 2:
-        return "First Alarm - 4 fire trucks"
     elif houses >= 1:
-        return "Under Control - Low fire risk"
+        return "First Alarm - 4 fire trucks"
     else:
         return "Fire Out - Fire has been neutralized"
 
