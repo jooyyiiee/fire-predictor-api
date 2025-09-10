@@ -840,7 +840,6 @@ def update_final_alarm_level():
         print(f"Error updating final alarm level: {str(e)}")
         return jsonify({'error': str(e)}), 500
 
-
 @app.route('/update_report_status', methods=['POST'])
 def update_report_status_post():
     try:
@@ -865,12 +864,12 @@ def update_report_status_post():
                 return jsonify({'error': 'reason is required when status is Cancelled'}), 400
             cancelled_by = (data.get('cancelled_by') or '').strip() or None
             from datetime import datetime, timezone
-            cancelled_at = datetime.now(timezone.utc).isoformat()
+            cancellation_timestamp = datetime.now(timezone.utc).isoformat()
 
             update_data.update({
                 'cancellation_reason': reason,
                 'cancelled_by': cancelled_by,
-                'cancelled_at': cancelled_at
+                'cancellation_timestamp': cancellation_timestamp
             })
 
         result = supabase.table("fire_reports").update(update_data).eq('id', report_id).execute()
@@ -884,7 +883,7 @@ def update_report_status_post():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-    
+
         
 
 if __name__ == '__main__':
