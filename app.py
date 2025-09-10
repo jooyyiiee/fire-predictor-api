@@ -64,21 +64,35 @@ FIRE_CLASSES = ['Fire', 'No Fire']
 STRUCTURE_CLASSES = ['Concrete Building', 'Metal Structure', 'Wooden Houses']
 SMOKE_CLASSES = ['high', 'low', 'medium']
 
-def determine_alarm_level(count):
-    if count is None:
+def determine_alarm_level(houses):
+    if houses is None:
         return "Unknown - structure count not provided"
-    if count >= 80: return "General Alarm - Major area affected (80 fire trucks)"
-    elif count >= 36: return "Task Force Delta - 36 fire trucks"
-    elif count >= 32: return "Task Force Charlie - 32 fire trucks"
-    elif count >= 28: return "Task Force Bravo - 28 fire trucks"
-    elif count >= 24: return "Task Force Alpha - 24 fire trucks"
-    elif count >= 20: return "Fifth Alarm - 20 fire trucks"
-    elif count >= 16: return "Fourth Alarm - 16 fire trucks"
-    elif count >= 12: return "Third Alarm - 12 fire trucks"
-    elif count >= 8:  return "Second Alarm - 8 fire trucks"
-    elif count >= 4:  return "First Alarm - 4 fire trucks"
-    elif count >= 1:  return "Under Control - Low fire risk"
-    else:             return "Fireout - Fire has been neutralized"
+    
+    if houses >= 640:
+        return "General Alarm - Major area affected (~80 fire trucks)"
+    elif houses >= 288:
+        return "Task Force Delta - Significant part (~36 fire trucks)"
+    elif houses >= 256:
+        return "Task Force Charlie - Significant part (~32 fire trucks)"
+    elif houses >= 225:
+        return "Task Force Bravo - ~28 fire trucks"
+    elif houses >= 144:
+        return "Task Force Alpha - ~24 fire trucks"
+    elif houses >= 11:
+        return "Fifth Alarm - 20 fire trucks"
+    elif houses >= 9:
+        return "Fourth Alarm - 16 fire trucks"
+    elif houses >= 7:
+        return "Third Alarm - 12 fire trucks"
+    elif houses >= 5:
+        return "Second Alarm - 8 fire trucks"
+    elif houses >= 2:
+        return "First Alarm - 4 fire trucks"
+    elif houses >= 1:
+        return "Under Control - Low fire risk"
+    else:
+        return "Fire Out - Fire has been neutralized"
+
 
 def reverse_geocode(latitude, longitude):
     """
