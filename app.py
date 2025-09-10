@@ -632,7 +632,6 @@ def cancel_report(report_id):
             print(f"⚠️ Report {report_id} is already cancelled")
             return jsonify({
                 'message': 'Report is already cancelled',
-                'cancelled_at': report.get('cancellation_timestamp', 'Previously cancelled'),
                 'report': report
             }), 200
         
@@ -648,7 +647,6 @@ def cancel_report(report_id):
         # Update status to Cancelled and add cancellation details
         update_data = {
             'status': 'Cancelled',
-            'cancelled_at': datetime.now(timezone.utc).isoformat(),
             'cancellation_timestamp': cancellation_time
         }
         
@@ -669,7 +667,6 @@ def cancel_report(report_id):
         
         return jsonify({
             'message': 'Report cancelled successfully',
-            'cancelled_at': cancellation_time,
             'report': updated_report,
             'status': 'success'
         }), 200
@@ -683,6 +680,7 @@ def cancel_report(report_id):
             'error': f'Failed to cancel report: {str(e)}',
             'report_id': report_id
         }), 500
+
 
 @app.route('/reports_near', methods=['GET'])
 def get_reports_near():
