@@ -602,6 +602,45 @@ def delete_report(report_id):
     except Exception as e:
         print(f"Error deleting report: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+@app.route('/cancel_report/<report_id>', methods=['POST'])
+def cancel_report(report_id):
+    """
+    Dedicated endpoint for cancelling a fire report
+    Sets the report status to 'Cancelled' and adds a cancellation timestamp
+    """
+    try:
+        # Get current timestamp for cancellation
+        manila_tz = timezone(timedelta(hours=8))
+        local_time = datetime.now(manila_tz)
+        cancellation_time = local_time.strftime("%B %d %I:%M %p").replace(" 0", " ").replace("AM", "am").replace("PM", "pm")
+        
+        # Update status to Cancelled and add cancellation details
+        update_data = {
+            'status': 'Cancelled',
+            'cancelled_at': datetime.now(timezone.utc).isoformat(),
+            'cancellation_timestamp': cancellation_time
+        }
+        
+        # Execute update
+        result = supabase.table("fire_reports").update(update_data).eq('id', report_id).execute()
+        
+        if not result.data:
+            return jsonify({'error': 'Report not found'}), 404
+        
+        print(f"✅ Cancelled report {report_id} at {cancellation_time}")
+        
+        # Return updated record
+        updated = supabase.table("fire_reports").select("*").eq('id', report_id).execute()
+        return jsonify({
+            'message': 'Report cancelled successfully',
+            'cancelled_at': cancellation_time,
+            'report': updated.data[0] if updated.data else {}
+        })
+        
+    except Exception as e:
+        print(f"Error cancelling report: {str(e)}")
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/reports_near', methods=['GET'])
 def get_reports_near():
@@ -803,6 +842,8 @@ def update_report_status_post():
     except Exception as e:
         print(f"Error updating report status: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
+        
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
