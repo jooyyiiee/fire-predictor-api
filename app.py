@@ -603,6 +603,7 @@ def delete_report(report_id):
         print(f"Error deleting report: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
+# ENHANCED BACKEND CANCEL REPORT ENDPOINT
 @app.route('/cancel_report/<report_id>', methods=['POST'])
 def cancel_report(report_id):
     """
@@ -610,6 +611,35 @@ def cancel_report(report_id):
     Sets the report status to 'Cancelled' and adds a cancellation timestamp
     """
     try:
+        print(f"🚫 Attempting to cancel report: {report_id}")
+        
+        # Validate report_id
+        if not report_id or report_id.strip() == '':
+            return jsonify({'error': 'Invalid report ID provided'}), 400
+        
+        # Check if report exists first
+        existing_report = supabase.table("fire_reports").select("*").eq('id', report_id).execute()
+        
+        if not existing_report.data:
+            print(f"❌ Report {report_id} not found")
+            return jsonify({'error': 'Report not found'}), 404
+        
+        report = existing_report.data[0]
+        current_status = report.get('status', '')
+        
+        # Check if already cancelled
+        if current_status == 'Cancelled':
+            print(f"⚠️ Report {report_id} is already cancelled")
+            return jsonify({
+                'message': 'Report is already cancelled',
+                'cancelled_at': report.get('cancellation_timestamp', 'Previously cancelled'),
+                'report': report
+            }), 200
+        
+        # Check if report is in a final state that shouldn't be cancelled
+        if current_status == 'Fire Out':
+            return jsonify({'error': 'Cannot cancel a report that has been marked as Fire Out'}), 400
+        
         # Get current timestamp for cancellation
         manila_tz = timezone(timedelta(hours=8))
         local_time = datetime.now(manila_tz)
@@ -622,25 +652,37 @@ def cancel_report(report_id):
             'cancellation_timestamp': cancellation_time
         }
         
+        print(f"📝 Updating report {report_id} with cancellation data: {update_data}")
+        
         # Execute update
         result = supabase.table("fire_reports").update(update_data).eq('id', report_id).execute()
         
         if not result.data:
-            return jsonify({'error': 'Report not found'}), 404
+            print(f"❌ Failed to update report {report_id} - no data returned")
+            return jsonify({'error': 'Failed to cancel report - update returned no data'}), 500
         
-        print(f"✅ Cancelled report {report_id} at {cancellation_time}")
+        print(f"✅ Successfully cancelled report {report_id} at {cancellation_time}")
         
         # Return updated record
         updated = supabase.table("fire_reports").select("*").eq('id', report_id).execute()
+        updated_report = updated.data[0] if updated.data else {}
+        
         return jsonify({
             'message': 'Report cancelled successfully',
             'cancelled_at': cancellation_time,
-            'report': updated.data[0] if updated.data else {}
-        })
+            'report': updated_report,
+            'status': 'success'
+        }), 200
         
+    except ValueError as e:
+        print(f"❌ ValueError cancelling report {report_id}: {str(e)}")
+        return jsonify({'error': f'Invalid report ID format: {str(e)}'}), 400
     except Exception as e:
-        print(f"Error cancelling report: {str(e)}")
-        return jsonify({'error': str(e)}), 500
+        print(f"❌ Exception cancelling report {report_id}: {str(e)}")
+        return jsonify({
+            'error': f'Failed to cancel report: {str(e)}',
+            'report_id': report_id
+        }), 500
 
 @app.route('/reports_near', methods=['GET'])
 def get_reports_near():
