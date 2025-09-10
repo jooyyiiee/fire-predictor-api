@@ -863,8 +863,14 @@ def update_report_status_post():
             if not reason:
                 return jsonify({'error': 'reason is required when status is Cancelled'}), 400
             cancelled_by = (data.get('cancelled_by') or '').strip() or None
-            from datetime import datetime, timezone
-            cancellation_timestamp = datetime.now(timezone.utc).isoformat()
+
+            from datetime import datetime, timedelta, timezone
+            manila_tz = timezone(timedelta(hours=8))
+            local_time = datetime.now(manila_tz)
+            cancellation_timestamp = local_time.strftime("%B %d, %Y %I:%M %p") \
+                .replace(" 0", " ") \
+                .replace("AM", "am") \
+                .replace("PM", "pm")
 
             update_data.update({
                 'cancellation_reason': reason,
@@ -883,6 +889,7 @@ def update_report_status_post():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
 
         
 
