@@ -50,7 +50,7 @@ app = Flask(__name__)
 CORS(app, resources={
     r"/*": {
         "origins": ["*"],  # Allow all origins in development
-        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+        "methods": ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
         "allow_headers": ["Content-Type", "Authorization"]
     }
 })
@@ -498,7 +498,7 @@ def update_report(report_id):
             alarm_level = determine_alarm_level(num_structures)
             
             # Determine status - use provided status if valid, otherwise auto-determine
-            valid_statuses = ['On Going', 'Under Control', 'Fire Out', 'False Alarm']
+            valid_statuses = ['On Going', 'Under Control', 'Fire Out', 'False Alarm', 'Cancelled']
             if status and status in valid_statuses:
                 final_status = status
             else:
