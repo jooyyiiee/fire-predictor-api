@@ -843,45 +843,46 @@ def update_final_alarm_level():
 
 @app.route('/update_report_status', methods=['POST'])
 def update_report_status_post():
-    """
-    POST version of status update for consistency with final alarm level endpoint
-    """
     try:
-        data = request.get_json()
-        
+        data = request.get_json(force=True) or {}
+
         if 'report_id' not in data:
             return jsonify({'error': 'report_id field is required'}), 400
-        
         if 'status' not in data:
             return jsonify({'error': 'status field is required'}), 400
-        
+
         report_id = data['report_id']
         new_status = data['status']
-        valid_statuses = ['On Going', 'Fire Out', 'Under Control']
-        
+        valid_statuses = ['On Going', 'Under Control', 'Fire Out', 'Cancelled']
         if new_status not in valid_statuses:
             return jsonify({'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}), 400
-        
-        # Update only the status
+
         update_data = {'status': new_status}
-        
-        # Execute update
+
+        if new_status == 'Cancelled':
+            reason = (data.get('reason') or '').strip()
+            if not reason:
+                return jsonify({'error': 'reason is required when status is Cancelled'}), 400
+            cancelled_by = (data.get('cancelled_by') or '').strip() or None
+            from datetime import datetime, timezone
+            cancelled_at = datetime.now(timezone.utc).isoformat()
+
+            update_data.update({
+                'cancellation_reason': reason,
+                'cancelled_by': cancelled_by,
+                'cancelled_at': cancelled_at
+            })
+
         result = supabase.table("fire_reports").update(update_data).eq('id', report_id).execute()
-        
         if not result.data:
             return jsonify({'error': 'Report not found'}), 404
-        
-        print(f"✅ Updated report {report_id} status to: {new_status}")
-        
-        # Return updated record
-        updated = supabase.table("fire_reports").select("*").eq('id', report_id).execute()
+
+        updated = supabase.table("fire_reports").select("*").eq('id', report_id).single().execute()
         return jsonify({
             'message': f'Status updated successfully to {new_status}',
-            'report': updated.data[0] if updated.data else {}
+            'report': updated.data or {}
         })
-        
     except Exception as e:
-        print(f"Error updating report status: {str(e)}")
         return jsonify({'error': str(e)}), 500
     
         
