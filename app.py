@@ -229,7 +229,10 @@ def save_report_to_supabase(image_url, prediction_json, geotag_location=None, ca
     """
     manila_tz = timezone(timedelta(hours=8))
     local_time = datetime.now(manila_tz)
-    formatted_time = local_time.strftime("%B %d %I:%M %p").replace(" 0", " ").replace("AM", "am").replace("PM", "pm")
+    formatted_time = local_time.strftime("%B %d, %Y %I:%M %p") \
+        .replace(" 0", " ") \
+        .replace("AM", "am") \
+        .replace("PM", "pm")
     
     # Parse coordinates from geotag_location
     latitude, longitude = parse_coordinates(geotag_location)
@@ -277,6 +280,7 @@ def save_report_to_supabase(image_url, prediction_json, geotag_location=None, ca
     result = supabase.table("fire_reports").insert(data).execute()
     print(f"💾 Saved report to database with address: {resolved_address} and status: {status}")
     return result
+
 
 @app.route('/')
 def home():
