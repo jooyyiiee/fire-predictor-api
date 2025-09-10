@@ -734,6 +734,7 @@ def get_reports_near():
     except Exception as e:
         print(f"Error getting nearby reports: {str(e)}")
         return jsonify({'error': str(e)}), 500
+    
 
 @app.route('/update_report_status/<report_id>', methods=['PATCH'])
 def update_report_status(report_id):
@@ -856,7 +857,7 @@ def update_report_status_post():
         
         report_id = data['report_id']
         new_status = data['status']
-        valid_statuses = ['On Going', 'Fire Out']
+        valid_statuses = ['On Going', 'Fire Out', 'Under Control']
         
         if new_status not in valid_statuses:
             return jsonify({'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'}), 400
